@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Deposit Calculator</title>
+        <style type = "text/css">
+            body      { font-family: arial, sans-serif }
+            div       { font-size: 10pt;
+                        text-align: center }
+            table     { border: 0 }
+            th        { text-align: right;
+                        background-color: #ffffaa; 
+                        padding-top: 2px;
+                        padding-bottom: 2px;
+                        padding-left: 10px;
+                        padding-right: 10px }  
+            td        { padding-top: 2px;
+                        padding-bottom: 2px;
+                        padding-left: 10px;
+                        padding-right: 10px }  
+            .error    { color: red }
+            .distinct { color: blue } 
+        </style>
+    </head>
+    <body>
+        <?php
+            extract($_GET);
+            
+            $validPrincipal = false;
+            $validRate = false;
+            $validYears = false;
+            $validName = false;
+            $validPostal = false;
+            $validPhone = false;
+            $validEmail = false;
+            $validCallTime = false;
+            $validationPassed = false;
+            
+            function ValidatePrincipal ($pamount, &$validPrincipal)
+            {
+                $pamount = trim($pamount);
+                if ( strlen($pamount) == 0)
+                {
+                    return "Pricincipal Amount field can not be blank.";
+                }
+                elseif ( !is_numeric($pamount) or $pamount <= 0)
+                {
+                    return "Pricincipal Amount must be a numeric number and greater than 0.";
+                }
+                else
+                {
+                    $validPrincipal = true;
+                }
+            }
+            
+            function ValidateRate ($rate, &$validRate)
+            {
+                $rate = trim($rate);
+                if ( strlen($rate) == 0)
+                {
+                    return "Interest Rate field can not be blank.";
+                }
+                elseif ( !is_numeric($rate) or $rate < 0 )
+                {
+                    return "Interest Rate must be numeric and not negative.";
+                }
+                else
+                {
+                    $validRate = true;
+                }
+            }
+            
+            function ValidteYears ($years, &$validYears)
+            {
+                $years = trim($years);
+                if( $years < 1 or $years > 20)
+                {
+                    return "Years to Deposit must be numeric and from 1 to 20.";
+                }
+                else
+                {
+                    $validYears = true;
+                }
+            }
+            
+            function ValidateName ($name, &$validName)
+            {
+                $name = trim($name);
+                if (strlen($name) == 0)
+                {
+                    return "Name field can not be blank.";
+                }
+                else
+                {
+                    $validName = true;
+                }
+            }
+            
+            function ValidatePostal ($postal, &$validPostal)
+            {
+                $postal = trim($postal);
+                $expression = '/^([a-zA-Z]\d[a-zA-Z])\ {0,1}(\d[a-zA-Z]\d)$/';
+                if (strlen($postal) == 0)
+                {
+                    return "Postal Code field can not be blank.";
+                }
+                elseif ( !preg_match ($expression, $postal) )
+                {
+                    return "Postal code must be in the form of  XnX nXn, where X is an upper or lower case letter and n is a digit from 0 to 9, with or without space between the first 3 characters and the last 3 characters.";
+                }
+                else
+                {
+                    $validPostal = true;
+                }
+            }
+
+            function ValidatePhone ($phone, &$validPhone)
+            {
+                $phone = trim($phone);
+                $expression = "/^([1-9][0-9]{2})-[1-9][0-9]{2}-[0-9]{4}$/";
+                if(strlen($phone) == 0)
+                {
+                    return "Phone Number field can not be blank.";
+                }
+                elseif(!preg_match($expression, $phone))
+                {
+                    return "Phone number must be in the form of nnn-nnn-nnnn where n is a digit, the first n in the first and the second 3-digit groups cannot be 0 or 1";
+                }
+                else
+                {
+                    $validPhone = true;
+                }
+            }
+            
+            function ValidateEmail ($email, &$validEmail)
+            {
+                $email = trim($email);
+                $expression = "/^([a-z0-9\+_\-]+)(\.[a-z0-9\+_\-]+)*@([a-z0-9\-]+\.)+[a-z]{2,6}$/ix";
+                if (strlen($email) == 0)
+                {
+                    return "Email Address field can not be blank.";
+                }
+                elseif (!preg_match($expression, $email)) 
+                {
+                    return "Email must be in the form of aaa@xxx.yyy where aaa and xxx is a character (including dot “.”) string of any length, yyy is a 2 to 4 characters string.";
+                }
+                else
+                {
+                    $validEmail = true;
+                }
+            }
+            function ValidateCallTime($contact, &$validCallTime)
+            {
+                if($contact == "Phone" && !$_GET['time'])
+                {
+                    return "If you choose to be contacted by phone, contact time field should be selected.";
+                }
+                else
+                {
+                    $validCallTime = true;
+                }
+            }
+
+        ?>
+        
+        <?php
+            $timeselected = "";
+            $firstOneTimeSelectedFlag = true;
+            
+            if(isset($btnSubmit))
+            {
+                ValidatePrincipal($pamount, $validPrincipal);
+                ValidateRate($rate, $validRate);
+                ValidteYears($years, $validYears);
+                ValidateName($name, $validName);
+                ValidatePostal($postal, $validPostal);
+                ValidatePhone($phone, $validPhone);
+                ValidateEmail($email, $validEmail);
+                ValidateCallTime($contact, $validCallTime);
+                
+                if(!$validPrincipal || !$validRate || !$validYears || 
+                   !$validName || !$validPostal || !$validPhone ||
+                   !$validEmail || !$validCallTime)
+                {
+                    $validationPassed = false;
+                }
+                else
+                {
+                    $validationPassed = true;
+                }
+                
+                if ($validationPassed)
+                {
+                    if ($contact == "Phone")
+                    {
+                        foreach ($time as $selected)
+                        {
+                            if ($firstOneTimeSelectedFlag == true)
+                            {
+                                $timeselected .= $selected;
+                                $firstOneTimeSelectedFlag = false;
+                            }
+                            else
+                            {
+                                $timeselected .= " or " . $selected;
+                            }                        
+                        }
+print <<<Mark
+                    <h3>Thank you, $name, for using our deposit calculation tool.</h3>
+                    <p>Our customer service department will call you tomorrow $timeselected at $phone.</p>
+Mark;
+                    }
+                    else if ($contact == "Email")
+                    {
+print <<<Mark
+                    <h3>Thank you, $name, for using our deposit calculation tool.</h3>
+                    <p>An email about the details of our GIC has been sent to $email.</p>
+Mark;
+                    }
+
+print <<<Mark
+                    <p>Following is the result of the calculation:</p>
+                    <table border="1">
+                    <tr><th>Year</th><th>Principal at Year Start</th><th>Interest for the Year</th></tr>
+Mark;
+                    $runningPamount = $pamount;
+                    for($i = 1; $i <= $years; ++$i)
+                    {
+                        $interest = $runningPamount * $rate * 0.01;
+                        printf ("<tr><td>%s</td><td>\$%.2f</td><td>\$%.2f</td></tr>", $i, $runningPamount, $interest);
+                        $runningPamount += $interest;
+                    }
+
+                    echo "</table>";
+                }
+            }
+            
+            if (isset($btnClear))
+            {
+                $pamount = "";
+                $rate = "";
+                $years = "0";
+                $name = "";
+                $postal = "";
+                $phone = "";
+                $email = "";
+                $contact = "Phone";
+            }
+            
+            if (!$validationPassed)
+            {
+        ?>
+
+        <form id="deposit" name="deposit" method = "get" action = "<?php echo $_SERVER['PHP_SEFL'];?>">
+            <h1>Deposit Calculator</h1>
+            <table>
+                <tr>
+                    <td>Principle Amount:</td>
+                    <td><input type = "text" id = "pamount" name = "pamount" value = "<?php echo $pamount; ?>" /></td>
+                    <td class='error'><?php if(isset($btnSubmit)) {echo ValidatePrincipal($pamount, $validPrincipal);} ?></td>
+                </tr>
+                <tr>
+                    <td>Interest Rate(%):</td><td><input type = "text" id ="rate" name = "rate" value = '<?php echo $rate; ?>'/></td>
+                    <td class='error'><?php if(isset($btnSubmit)) {echo ValidateRate($rate, $validRate);} ?></td>
+                </tr>
+                <tr>
+
+                    <!--<td>Years to Deposit:</td><td><input type = "text" id ="years" name = "years" /></td>-->
+                    <td>Years to Deposit:</td>
+                    <td>
+                        <select id = "years" name = "years"/>
+                        <option value="0">0</option>
+                        <option value="1"  <?php echo (isset($years) && $years == '1')?'selected="selected"':'';  ?> >1</option>
+                        <option value="2"  <?php echo (isset($years) && $years == '2')?'selected="selected"':'';  ?> >2</option>
+                        <option value="3"  <?php echo (isset($years) && $years == '3')?'selected="selected"':'';  ?> >3</option>
+                        <option value="4"  <?php echo (isset($years) && $years == '4')?'selected="selected"':'';  ?> >4</option>
+                        <option value="5"  <?php echo (isset($years) && $years == '5')?'selected="selected"':'';  ?> >5</option>
+                        <option value="6"  <?php echo (isset($years) && $years == '6')?'selected="selected"':'';  ?> >6</option>
+                        <option value="7"  <?php echo (isset($years) && $years == '7')?'selected="selected"':'';  ?> >7</option>
+                        <option value="8"  <?php echo (isset($years) && $years == '8')?'selected="selected"':'';  ?> >8</option>
+                        <option value="9"  <?php echo (isset($years) && $years == '9')?'selected="selected"':'';  ?> >9</option>
+                        <option value="10" <?php echo (isset($years) && $years == '10')?'selected="selected"':''; ?> >10</option>
+                        <option value="11" <?php echo (isset($years) && $years == '11')?'selected="selected"':''; ?> >11</option>
+                        <option value="12" <?php echo (isset($years) && $years == '12')?'selected="selected"':''; ?> >12</option>
+                        <option value="13" <?php echo (isset($years) && $years == '13')?'selected="selected"':''; ?> >13</option>
+                        <option value="14" <?php echo (isset($years) && $years == '14')?'selected="selected"':''; ?> >14</option>
+                        <option value="15" <?php echo (isset($years) && $years == '15')?'selected="selected"':''; ?> >15</option>
+                        <option value="16" <?php echo (isset($years) && $years == '16')?'selected="selected"':''; ?> >16</option>
+                        <option value="17" <?php echo (isset($years) && $years == '17')?'selected="selected"':''; ?> >17</option>
+                        <option value="18" <?php echo (isset($years) && $years == '18')?'selected="selected"':''; ?> >18</option>
+                        <option value="19" <?php echo (isset($years) && $years == '19')?'selected="selected"':''; ?> >19</option>
+                        <option value="20" <?php echo (isset($years) && $years == '20')?'selected="selected"':''; ?> >20</option>     
+                    </td>
+                    <td class = "error"><?php if(isset($btnSubmit)) {echo ValidteYears($years, $validYears);} ?></td>
+                </tr>
+            </table>
+            <h2></h2>
+            <table>
+                <tr>
+                    <td>Name:</td><td><input type = "text" name = "name" value = "<?php echo $name; ?>"/></td>
+                    <td class = 'error'><?php if(isset($btnSubmit)) {echo ValidateName($name, $validName);} ?></td>
+                </tr>
+                <tr>
+                    <td>Postal Code:</td><td><input type = "text" name = "postal" value = "<?php echo $postal; ?>"/></td>
+                    <td class = 'error'><?php if(isset($btnSubmit)) {echo ValidatePostal($postal, $validPostal);} ?></td>
+                </tr>
+                <tr>
+                    <td>Phone Number:</td><td><input type = "text" name = "phone" value = "<?php echo $phone; ?>"/></td>
+                    <td class = 'error'><?php if(isset($btnSubmit)) {echo ValidatePhone($phone, $validPhone);} ?></td>
+                </tr>
+                <tr>
+                    <td>(nnn-nnn-nnnn)</td>
+                </tr>
+                <tr>
+                    <td>Email Address:</td><td><input type = "text" name = "email" value = "<?php echo $email; ?>"/></td>
+                    <td class = 'error'><?php if(isset($btnSubmit)) {echo ValidateEmail($email, $validEmail);} ?></td>
+                </tr>
+            </table>
+            <h2></h2>
+            <table>
+                <tr>
+                    <td>Preferred Contact Method:
+                        <input type = "radio" name = "contact" value = "Phone" <?php echo (!isset($contact) || (isset($contact) && $contact == 'Phone'))?'checked="checked"':'';  ?> />Phone          
+                    <input type = "radio" name = "contact" value = "Email" <?php echo (isset($contact) && $contact == 'Email')?'checked="checked"':'';  ?> />Email
+                    </td>
+                </tr>
+                <tr>
+                    <td>If phone is selected, when can we contact you?
+                    </td>
+                </tr>
+                <tr>
+                    <td>(check all applicable)</td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type = "checkbox" name = "time[]" value ="Morning" <?php if(isset($btnClear)) {echo '';} elseif(isset($_GET['time'])) { echo (in_array('Morning', $_GET['time']))?'checked="checked"':''; } ?> />Morning
+                        <input type = "checkbox" name = "time[]" value = "Afternoon" <?php if(isset($btnClear)) {echo '';} elseif(isset($_GET['time'])) { echo (in_array('Afternoon', $_GET['time']))?'checked="checked"':''; } ?> />Afternoon
+                        <input type = "checkbox" name = "time[]" value = "Evening" <?php if(isset($btnClear)) {echo '';} elseif(isset($_GET['time'])) { echo (in_array('Evening', $_GET['time']))?'checked="checked"':''; } ?> />Evening
+                    </td>
+                    <td class = 'error'><?php if(isset($btnSubmit)){echo ValidateCallTime($contact, $validCallTime);}?></td>
+                    
+                </tr>
+                <tr>
+                    <td>
+                    <input type = "submit" name = "btnSubmit" value = "Calculate" />
+                    <input type = "submit" name = "btnClear" value = "Clear" />
+                    </td>
+                </tr>
+            </table>
+        </form>
+        <?php 
+            }
+        ?>
+    </body>
+</html>
